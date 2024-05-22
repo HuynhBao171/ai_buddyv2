@@ -4,6 +4,7 @@ import 'package:ai_buddy/core/config/assets_constants.dart';
 import 'package:ai_buddy/core/config/type_of_bot.dart';
 import 'package:ai_buddy/core/extension/context.dart';
 import 'package:ai_buddy/core/logger/loggy_types.dart';
+import 'package:ai_buddy/core/services/camera_service.dart';
 import 'package:ai_buddy/core/services/listening_service.dart';
 import 'package:ai_buddy/feature/chat/provider/message_provider.dart';
 import 'package:ai_buddy/feature/chat/widgets/audio_interface_widget.dart';
@@ -22,6 +23,9 @@ class ChatPage extends ConsumerWidget with UiLoggy {
   Widget build(BuildContext context, WidgetRef ref) {
     late final ListeningService listeningService;
     listeningService = ListeningService()..initSpeech();
+
+    late final CameraService cameraService;
+    cameraService = CameraService()..initialize();
 
     final chatBot = ref.watch(messageListProvider);
     final color = chatBot.typeOfBot == TypeOfBot.pdf
@@ -180,6 +184,7 @@ class ChatPage extends ConsumerWidget with UiLoggy {
                           color: color,
                           imagePath: imagePath,
                           listeningService: listeningService,
+                          cameraService: cameraService,
                         ),
                       )
                     else

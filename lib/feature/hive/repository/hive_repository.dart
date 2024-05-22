@@ -6,7 +6,8 @@ import 'package:hive/hive.dart';
 class HiveRepository implements BaseHiveRepository {
   HiveRepository();
   final Box<ChatBot> _chatBot = Hive.box<ChatBot>('chatbots');
-  final Box<AudioMessage> _audioMessage = Hive.box<AudioMessage>('audioMessages');
+  final Box<AudioMessage> _audioMessage =
+      Hive.box<AudioMessage>('audioMessages');
 
   @override
   Future<void> saveChatBot({required ChatBot chatBot}) async {
@@ -34,5 +35,4 @@ class HiveRepository implements BaseHiveRepository {
   Future<AudioMessage?> getAudioMessage({required String id}) async {
     return _audioMessage.get(id); // Lấy audio message theo id
   }
-
 }

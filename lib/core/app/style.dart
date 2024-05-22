@@ -72,7 +72,7 @@ ThemeData _getTheme() {
     colorScheme: colorScheme,
     textTheme: textTheme,
     primaryTextTheme: primaryTextTheme,
-    scaffoldBackgroundColor: colorScheme.background,
+    scaffoldBackgroundColor: _background,
     disabledColor: _disabled,
     dividerTheme: const DividerThemeData(
       color: _divider,

@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:device_info_plus/device_info_plus.dart';
 
 Future<void> backgroundService() async {
   final service = FlutterBackgroundService();
@@ -75,7 +75,7 @@ Future<bool> onIosBackground(ServiceInstance service) async {
 }
 
 @pragma('vm:entry-point')
-void onStart(ServiceInstance service) async {
+Future<void> onStart(ServiceInstance service) async {
   // Only available for flutter 3.0.0 and later
   DartPluginRegistrant.ensureInitialized();
 
@@ -123,8 +123,8 @@ void onStart(ServiceInstance service) async {
 
         // if you don't using custom notification, uncomment this
         await service.setForegroundNotificationInfo(
-          title: "My App Service",
-          content: "Voice Detection",
+          title: 'My App Service',
+          content: 'Voice Detection',
         );
       }
     }
@@ -148,8 +148,8 @@ void onStart(ServiceInstance service) async {
     service.invoke(
       'update',
       {
-        "current_date": DateTime.now().toIso8601String(),
-        "device": device,
+        'current_date': DateTime.now().toIso8601String(),
+        'device': device,
       },
     );
   });

@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:ai_buddy/core/config/type_of_message.dart';
 import 'package:ai_buddy/core/extension/context.dart';
 import 'package:ai_buddy/core/extension/widget.dart';
+import 'package:ai_buddy/core/services/camera_service.dart';
 import 'package:ai_buddy/core/services/listening_service.dart';
 import 'package:ai_buddy/feature/chat/provider/message_provider.dart';
 import 'package:ai_buddy/feature/hive/model/chat_bot/chat_bot.dart';
@@ -18,6 +21,7 @@ class AudioInterfaceWidget extends ConsumerStatefulWidget with UiLoggy {
     required this.color,
     required this.imagePath,
     required this.listeningService,
+    required this.cameraService,
     super.key,
   });
 
@@ -26,6 +30,7 @@ class AudioInterfaceWidget extends ConsumerStatefulWidget with UiLoggy {
   final Color color;
   final String imagePath;
   final ListeningService listeningService;
+  final CameraService cameraService;
 
   @override
   ConsumerState<AudioInterfaceWidget> createState() =>
@@ -36,6 +41,8 @@ class _AudioInterfaceWidgetState extends ConsumerState<AudioInterfaceWidget> {
   final uuid = const Uuid();
   String recognizedText = '';
   String? audioId;
+  // String? imagePath;
+  final List<String?> imagePaths = [];
   bool isListening = false;
   bool isDone = false;
 
@@ -63,7 +70,7 @@ class _AudioInterfaceWidgetState extends ConsumerState<AudioInterfaceWidget> {
                         },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: widget.color.withOpacity(0.9),
-                    minimumSize: const Size(100, 50),
+                    minimumSize: const Size(80, 50),
                   ),
                   child: Icon(
                     Icons.mic,
@@ -88,7 +95,7 @@ class _AudioInterfaceWidgetState extends ConsumerState<AudioInterfaceWidget> {
                         },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: widget.color.withOpacity(0.9),
-                    minimumSize: const Size(100, 50),
+                    minimumSize: const Size(80, 50),
                   ),
                   child: Icon(
                     Icons.done,
@@ -105,7 +112,7 @@ class _AudioInterfaceWidgetState extends ConsumerState<AudioInterfaceWidget> {
                         },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: widget.color.withOpacity(0.9),
-                    minimumSize: const Size(100, 50),
+                    minimumSize: const Size(80, 50),
                   ),
                   child: Icon(
                     Icons.play_arrow,
@@ -113,15 +120,69 @@ class _AudioInterfaceWidgetState extends ConsumerState<AudioInterfaceWidget> {
                   ),
                 ),
                 IconButton(
+                  onPressed: () {
+                    if (imagePaths.isNotEmpty) {
+                      showDialog<AlertDialog>(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            content: SingleChildScrollView(
+                              child: Column(
+                                children: imagePaths
+                                    .map(
+                                      (imagePath) => imagePath != null
+                                          ? Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(16),
+                                                child: Image.file(
+                                                  File(imagePath),
+                                                ),
+                                              ),
+                                            )
+                                          : const SizedBox.shrink(),
+                                    )
+                                    .toList(),
+                              ),
+                            ),
+                            actions: <Widget>[
+                              TextButton(
+                                child: const Text('Close'),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: widget.color,
+                    minimumSize: const Size(50, 50),
+                  ),
+                  icon: Icon(
+                    Icons.image,
+                    color: context.colorScheme.outlineVariant,
+                  ),
+                ),
+                IconButton(
                   onPressed: !isDone
                       ? null
-                      : () {
-                          widget.loggy
-                              .info('Send button pressed - ${recognizedText}');
-
-                          // Kiểm tra isFinished trước khi gửi
+                      : () async {
+                          widget.loggy.info('Send button pressed');
                           if (widget.listeningService.isFinished) {
-                            ref
+                            // imagePaths[1] =
+                            //     await widget.cameraService.takePicture();
+                            imagePaths.addAll(await widget.cameraService
+                                .takeMultiplePictures());
+                            widget.loggy
+                                .info('Image captured: ${imagePaths[1]}');
+
+                            await ref
                                 .watch(messageListProvider.notifier)
                                 .handleSendPressed(
                                   text:
@@ -133,11 +194,15 @@ class _AudioInterfaceWidgetState extends ConsumerState<AudioInterfaceWidget> {
                             });
                           } else {
                             widget.loggy.warning(
-                                'Speech recognition is not finished yet.');
+                              'Speech recognition is not finished yet.',
+                            );
                             ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text(
-                                        'You need to press "Done" before pressing "Send"')));
+                              const SnackBar(
+                                content: Text(
+                                  'You need to press "Done" before pressing "Send"',
+                                ),
+                              ),
+                            );
                           }
                         },
                   style: ElevatedButton.styleFrom(
