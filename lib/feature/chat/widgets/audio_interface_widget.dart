@@ -42,7 +42,7 @@ class _AudioInterfaceWidgetState extends ConsumerState<AudioInterfaceWidget> {
   String recognizedText = '';
   String? audioId;
   // String? imagePath;
-  final List<String?> imagePaths = [];
+  List<String?> imagePaths = [];
   bool isListening = false;
   bool isDone = false;
 
@@ -62,7 +62,12 @@ class _AudioInterfaceWidgetState extends ConsumerState<AudioInterfaceWidget> {
                           setState(() {
                             audioId = uuid.v4();
                             isListening = true;
+                            imagePaths = [];
                           });
+                          imagePaths.addAll(await widget.cameraService
+                              .takeMultiplePictures());
+                          widget.loggy.info('Image captured: ${imagePaths[1]}');
+
                           widget.loggy
                               .info('Listen button pressed - ID: $audioId');
                           await widget.listeningService.initSpeech();
@@ -107,7 +112,7 @@ class _AudioInterfaceWidgetState extends ConsumerState<AudioInterfaceWidget> {
                       ? null
                       : () async {
                           widget.loggy
-                              .info('Play button pressed - ID: $audioId');
+                              .info('Play back button pressed - ID: $audioId');
                           await widget.listeningService.playAudio();
                         },
                   style: ElevatedButton.styleFrom(
@@ -172,17 +177,10 @@ class _AudioInterfaceWidgetState extends ConsumerState<AudioInterfaceWidget> {
                 IconButton(
                   onPressed: !isDone
                       ? null
-                      : () async {
+                      : () {
                           widget.loggy.info('Send button pressed');
                           if (widget.listeningService.isFinished) {
-                            // imagePaths[1] =
-                            //     await widget.cameraService.takePicture();
-                            imagePaths.addAll(await widget.cameraService
-                                .takeMultiplePictures());
-                            widget.loggy
-                                .info('Image captured: ${imagePaths[1]}');
-
-                            await ref
+                            ref
                                 .watch(messageListProvider.notifier)
                                 .handleSendPressed(
                                   text:

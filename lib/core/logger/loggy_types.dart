@@ -5,6 +5,11 @@ mixin ModelLoggy implements LoggyType {
   Loggy<ModelLoggy> get loggy => Loggy<ModelLoggy>('MODEL: $runtimeType');
 }
 
+mixin ServiceLoggy implements LoggyType {
+  @override
+  Loggy<ServiceLoggy> get loggy => Loggy<ServiceLoggy>('Service: $runtimeType');
+}
+
 mixin UiLoggy implements LoggyType {
   @override
   Loggy<UiLoggy> get loggy => Loggy<UiLoggy>('UI: $runtimeType');
