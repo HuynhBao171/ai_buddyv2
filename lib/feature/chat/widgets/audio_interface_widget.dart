@@ -41,7 +41,6 @@ class _AudioInterfaceWidgetState extends ConsumerState<AudioInterfaceWidget> {
   final uuid = const Uuid();
   String recognizedText = '';
   String? audioId;
-  // String? imagePath;
   List<String?> imagePaths = [];
   bool isListening = false;
   bool isDone = false;

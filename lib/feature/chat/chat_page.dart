@@ -8,6 +8,7 @@ import 'package:ai_buddy/core/services/camera_service.dart';
 import 'package:ai_buddy/core/services/listening_service.dart';
 import 'package:ai_buddy/feature/chat/provider/message_provider.dart';
 import 'package:ai_buddy/feature/chat/widgets/audio_interface_widget.dart';
+import 'package:ai_buddy/feature/chat/widgets/audio_interface_widget_v2.dart';
 import 'package:ai_buddy/feature/chat/widgets/chat_interface_widget.dart';
 import 'package:ai_buddy/feature/home/provider/chat_bot_provider.dart';
 import 'package:ai_buddy/feature/home/widgets/widgets.dart';
@@ -16,16 +17,20 @@ import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+final cameraServiceProviver =
+    Provider<CameraService>((ref) => CameraService()..initialize());
+
+final listeningServiceProviver =
+    Provider<ListeningService>((ref) => ListeningService()..initSpeech());
+
 class ChatPage extends ConsumerWidget with UiLoggy {
   const ChatPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    late final ListeningService listeningService;
-    listeningService = ListeningService()..initSpeech();
+    final listeningService = ref.watch(listeningServiceProviver);
 
-    late final CameraService cameraService;
-    cameraService = CameraService()..initialize();
+    final cameraService = ref.watch(cameraServiceProviver);
 
     final chatBot = ref.watch(messageListProvider);
     final color = chatBot.typeOfBot == TypeOfBot.pdf
@@ -186,6 +191,14 @@ class ChatPage extends ConsumerWidget with UiLoggy {
                           listeningService: listeningService,
                           cameraService: cameraService,
                         ),
+                        // child: AudioInterfaceWidgetV2(
+                        //   messages: messages,
+                        //   chatBot: chatBot,
+                        //   color: color,
+                        //   imagePath: imagePath,
+                        //   listeningService: listeningService,
+                        //   cameraService: cameraService,
+                        // ),
                       )
                     else
                       Expanded(
