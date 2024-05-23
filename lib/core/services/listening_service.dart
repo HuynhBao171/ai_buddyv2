@@ -111,7 +111,10 @@ class ListeningService with ServiceLoggy {
     loggy.info('Playing audio...');
     if (_recordedFilePath != null) {
       try {
-        await _audioPlayer.play(DeviceFileSource(_recordedFilePath!));
+        await _audioPlayer.play(DeviceFileSource(
+          _recordedFilePath!,
+          mimeType: 'audio/aac',
+        ));
       } catch (e) {
         loggy.error('Error playing audio: $e');
       }
