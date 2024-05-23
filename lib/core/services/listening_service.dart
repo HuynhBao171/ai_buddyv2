@@ -7,14 +7,14 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
-import 'package:speech_to_text/speech_recognition_result.dart';
-import 'package:speech_to_text/speech_to_text.dart';
+// import 'package:speech_to_text/speech_recognition_result.dart';
+// import 'package:speech_to_text/speech_to_text.dart';
 
 class ListeningService with ServiceLoggy {
-  final SpeechToText _speechToText = SpeechToText();
+  // final SpeechToText _speechToText = SpeechToText();
   final _audioRecorder = AudioRecorder();
   final _audioPlayer = AudioPlayer();
-  bool _speechEnabled = false;
+  // bool _speechEnabled = false;
   bool isFinished = false;
   String? _recordedFilePath;
   String? recognizedText;
@@ -25,7 +25,7 @@ class ListeningService with ServiceLoggy {
     loggy.info('Initializing speech-to-text service...');
     isFinished = false;
     try {
-      _speechEnabled = await _speechToText.initialize();
+      // _speechEnabled = await _speechToText.initialize();
       loggy.info('Speech-to-text service initialized successfully.');
     } catch (e) {
       loggy.error('Error initializing speech-to-text service: $e');
@@ -35,10 +35,10 @@ class ListeningService with ServiceLoggy {
   Future<void> startListening() async {
     await initSpeech();
     loggy.info('Starting listening...');
-    if (!_speechEnabled) {
-      loggy.warning('Speech-to-text is not enabled.');
-      return;
-    }
+    // if (!_speechEnabled) {
+    //   loggy.warning('Speech-to-text is not enabled.');
+    //   return;
+    // }
 
     try {
       if (!(await Permission.microphone.request().isGranted)) {
@@ -58,7 +58,7 @@ class ListeningService with ServiceLoggy {
         );
 
         // Start speech-to-text
-        await _speechToText.listen(onResult: _onSpeechResult);
+        // await _speechToText.listen(onResult: _onSpeechResult);
         loggy.info('Listening started.');
       }
     } catch (e) {
@@ -66,11 +66,11 @@ class ListeningService with ServiceLoggy {
     }
   }
 
-  void _onSpeechResult(SpeechRecognitionResult result) {
-    if (result.finalResult) {
-      recognizedText = result.recognizedWords;
-    }
-  }
+  // void _onSpeechResult(SpeechRecognitionResult result) {
+  //   if (result.finalResult) {
+  //     recognizedText = result.recognizedWords;
+  //   }
+  // }
 
   Future<String> stopListening({required String id}) async {
     loggy.info('Stopping listening...');
@@ -78,13 +78,13 @@ class ListeningService with ServiceLoggy {
       // Dừng AudioRecorder trước
       if (await _audioRecorder.isRecording()) {
         await _audioRecorder.stop();
-        await _audioRecorder.dispose(); // Giải phóng tài nguyên
+        // await _audioRecorder.dispose(); // Giải phóng tài nguyên
       }
 
       // Dừng SpeechToText sau
-      if (_speechToText.isListening) {
-        await _speechToText.stop();
-      }
+      // if (_speechToText.isListening) {
+      //   await _speechToText.stop();
+      // }
       isFinished = true;
 
       if (_recordedFilePath != null) {
