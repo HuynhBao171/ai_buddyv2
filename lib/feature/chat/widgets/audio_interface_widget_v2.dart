@@ -49,6 +49,12 @@ class _AudioInterfaceWidgetV2State
   bool isDone = false;
 
   @override
+  void dispose() {
+    widget.cameraService.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       children: [
@@ -63,6 +69,7 @@ class _AudioInterfaceWidgetV2State
                       : () async {
                           widget.loggy
                               .info('Delete button pressed - ID: $audioId');
+
                           await widget.listeningService
                               .deleteAudio(id: audioId!);
                           setState(() {
