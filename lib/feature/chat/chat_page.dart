@@ -16,6 +16,9 @@ import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+final cameraServiceProviver =
+    Provider<CameraService>((ref) => CameraService()..initialize());
+
 class ChatPage extends ConsumerWidget with UiLoggy {
   const ChatPage({super.key});
 
@@ -25,7 +28,7 @@ class ChatPage extends ConsumerWidget with UiLoggy {
     listeningService = ListeningService()..initSpeech();
 
     late final CameraService cameraService;
-    cameraService = CameraService()..initialize();
+    cameraService = ref.watch(cameraServiceProviver);
 
     final chatBot = ref.watch(messageListProvider);
     final color = chatBot.typeOfBot == TypeOfBot.pdf
