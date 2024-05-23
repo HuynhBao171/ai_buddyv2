@@ -33,6 +33,7 @@ class ListeningService with ServiceLoggy {
   }
 
   Future<void> startListening() async {
+    await initSpeech();
     loggy.info('Starting listening...');
     if (!_speechEnabled) {
       loggy.warning('Speech-to-text is not enabled.');

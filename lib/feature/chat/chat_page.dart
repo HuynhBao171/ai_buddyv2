@@ -18,10 +18,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 final cameraServiceProviver =
-    Provider<CameraService>((ref) => CameraService()..initialize());
+    Provider<CameraService>((ref) => CameraService());
 
 final listeningServiceProviver =
-    Provider<ListeningService>((ref) => ListeningService()..initSpeech());
+    Provider<ListeningService>((ref) => ListeningService());
 
 class ChatPage extends ConsumerWidget with UiLoggy {
   const ChatPage({super.key});
@@ -183,15 +183,7 @@ class ChatPage extends ConsumerWidget with UiLoggy {
                     ),
                     if (chatBot.typeOfBot == TypeOfBot.audio)
                       Expanded(
-                        child: AudioInterfaceWidget(
-                          messages: messages,
-                          chatBot: chatBot,
-                          color: color,
-                          imagePath: imagePath,
-                          listeningService: listeningService,
-                          cameraService: cameraService,
-                        ),
-                        // child: AudioInterfaceWidgetV2(
+                        // child: AudioInterfaceWidget(
                         //   messages: messages,
                         //   chatBot: chatBot,
                         //   color: color,
@@ -199,6 +191,14 @@ class ChatPage extends ConsumerWidget with UiLoggy {
                         //   listeningService: listeningService,
                         //   cameraService: cameraService,
                         // ),
+                        child: AudioInterfaceWidgetV2(
+                          messages: messages,
+                          chatBot: chatBot,
+                          color: color,
+                          imagePath: imagePath,
+                          listeningService: listeningService,
+                          cameraService: cameraService,
+                        ),
                       )
                     else
                       Expanded(

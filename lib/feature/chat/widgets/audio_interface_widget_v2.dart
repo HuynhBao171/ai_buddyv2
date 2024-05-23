@@ -49,6 +49,12 @@ class _AudioInterfaceWidgetV2State
   bool isDone = false;
 
   @override
+  void initState() {
+    super.initState();
+    widget.cameraService.initialize();
+  }
+
+  @override
   void dispose() {
     widget.cameraService.dispose();
     super.dispose();
