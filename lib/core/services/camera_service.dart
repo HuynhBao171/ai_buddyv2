@@ -17,8 +17,14 @@ class CameraService with ServiceLoggy {
       if (await Permission.camera.request().isGranted) {
         _cameras = await availableCameras();
         _controller = CameraController(
-            _cameras[1], ResolutionPreset.medium); // Sử dụng camera trước
-        await _controller?.initialize();
+          _cameras[1],
+          ResolutionPreset.ultraHigh,
+        );
+        await _controller?.initialize().then((_) async {
+          if (_controller!.value.flashMode != FlashMode.off) {
+            await _controller?.setFlashMode(FlashMode.off);
+          }
+        });
         loggy.info('Camera service initialized successfully.');
       } else {
         loggy.warning('Camera permission denied.');
@@ -29,30 +35,30 @@ class CameraService with ServiceLoggy {
   }
 
   Future<String?> takePicture() async {
-  loggy.info('Taking picture...');
-  if (_controller != null && !_controller!.value.isInitialized) {
-    loggy.warning('Camera is not initialized.');
-    return null;
-  }
+    loggy.info('Taking picture...');
+    if (_controller != null && !_controller!.value.isInitialized) {
+      loggy.warning('Camera is not initialized.');
+      return null;
+    }
 
-  final directory = await getApplicationDocumentsDirectory();
-  final imagePath = join(
-    directory.path,
-    '${DateTime.now().millisecondsSinceEpoch}.jpg',
-  );
+    final directory = await getApplicationDocumentsDirectory();
+    final imagePath = join(
+      directory.path,
+      '${DateTime.now().millisecondsSinceEpoch}.jpg',
+    );
 
-  try {
-    await _controller?.takePicture().then((file) {
-      loggy.info('Picture taken - path: $_imagePath');
-      _imagePath = imagePath;
-      file.saveTo(imagePath);
-    });
-    return _imagePath;
-  } catch (e) {
-    loggy.error('Error taking picture: $e');
-    return null;
+    try {
+      await _controller?.takePicture().then((file) {
+        loggy.info('Picture taken - path: $_imagePath');
+        _imagePath = imagePath;
+        file.saveTo(imagePath);
+      });
+      return _imagePath;
+    } catch (e) {
+      loggy.error('Error taking picture: $e');
+      return null;
+    }
   }
-}
 
   Future<List<String?>> takeMultiplePictures() async {
     final List<String?> imagePaths = [];
