@@ -18,7 +18,7 @@ class VoiceRecordBottomSheet extends StatefulWidget {
   final ListeningService listeningService;
   final Color color;
   final String audioId;
-  final Function(String recognizedText) onDone;
+  final void Function(String recognizedText) onDone;
 
   @override
   State<VoiceRecordBottomSheet> createState() => _VoiceRecordBottomSheetState();
@@ -105,6 +105,9 @@ class _VoiceRecordBottomSheetState extends State<VoiceRecordBottomSheet> {
 
                     // Gọi callback onDone với recognizedText
                     widget.onDone(recognizedText);
+                    await Future<void>.delayed(
+                        const Duration(milliseconds: 500));
+                    Navigator.of(context).pop();
                   },
                   child: Container(
                     width: 80,
