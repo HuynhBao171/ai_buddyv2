@@ -35,4 +35,9 @@ class HiveRepository implements BaseHiveRepository {
   Future<AudioMessage?> getAudioMessage({required String id}) async {
     return _audioMessage.get(id); // Lấy audio message theo id
   }
+
+  @override
+  Future<void> deleteAudioMessage({required String id}) {
+    return _audioMessage.delete(id);
+  }
 }

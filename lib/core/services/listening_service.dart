@@ -19,6 +19,8 @@ class ListeningService with ServiceLoggy {
   String? _recordedFilePath;
   String? recognizedText;
 
+  final HiveRepository _hiveRepository = HiveRepository();
+
   Future<void> initSpeech() async {
     loggy.info('Initializing speech-to-text service...');
     isFinished = false;
@@ -38,11 +40,14 @@ class ListeningService with ServiceLoggy {
     }
 
     try {
-      if (await Permission.microphone.request().isGranted &&
-          await Permission.storage.request().isGranted) {
+      if (!(await Permission.microphone.request().isGranted)) {
+        loggy.warning('Microphone permission denied.');
+      } else if (!(await Permission.storage.request().isGranted)) {
+        loggy.warning('Storage permission denied.');
+      } else {
         recognizedText = null;
 
-        // Bắt đầu ghi âm
+        // Start recording
         final tempDir = await getTemporaryDirectory();
         _recordedFilePath =
             '${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.aac';
@@ -51,11 +56,9 @@ class ListeningService with ServiceLoggy {
           path: _recordedFilePath!,
         );
 
-        // Bắt đầu speech-to-text
+        // Start speech-to-text
         await _speechToText.listen(onResult: _onSpeechResult);
         loggy.info('Listening started.');
-      } else {
-        loggy.warning('Microphone or storage permission denied.');
       }
     } catch (e) {
       loggy.error('Error starting listening: $e');
@@ -89,7 +92,7 @@ class ListeningService with ServiceLoggy {
           filePath: _recordedFilePath!,
         );
         try {
-          await HiveRepository().saveAudioMessage(audioMessage: audioMessage);
+          await _hiveRepository.saveAudioMessage(audioMessage: audioMessage);
           loggy.info('Audio message saved successfully.');
         } catch (e) {
           loggy.error('Error saving audio message: $e');
@@ -111,6 +114,16 @@ class ListeningService with ServiceLoggy {
       } catch (e) {
         loggy.error('Error playing audio: $e');
       }
+    }
+  }
+
+  Future<void> deleteAudio({required String id}) async {
+    loggy.info('Deleting audio message with ID: $id');
+    try {
+      await _hiveRepository.deleteAudioMessage(id: id);
+      loggy.info('Audio message deleted successfully.');
+    } catch (e) {
+      loggy.error('Error deleting audio message: $e');
     }
   }
 }

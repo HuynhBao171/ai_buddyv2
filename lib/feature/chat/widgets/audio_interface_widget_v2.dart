@@ -1,10 +1,13 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:ai_buddy/core/config/type_of_message.dart';
 import 'package:ai_buddy/core/extension/context.dart';
 import 'package:ai_buddy/core/extension/widget.dart';
+import 'package:ai_buddy/core/services/camera_service.dart';
 import 'package:ai_buddy/core/services/listening_service.dart';
 import 'package:ai_buddy/feature/chat/provider/message_provider.dart';
+import 'package:ai_buddy/feature/chat/widgets/voice_record_bottom_sheet.dart';
 import 'package:ai_buddy/feature/hive/model/chat_bot/chat_bot.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
@@ -20,6 +23,7 @@ class AudioInterfaceWidgetV2 extends ConsumerStatefulWidget with UiLoggy {
     required this.color,
     required this.imagePath,
     required this.listeningService,
+    required this.cameraService,
     super.key,
   });
 
@@ -28,20 +32,21 @@ class AudioInterfaceWidgetV2 extends ConsumerStatefulWidget with UiLoggy {
   final Color color;
   final String imagePath;
   final ListeningService listeningService;
+  final CameraService cameraService;
 
   @override
   ConsumerState<AudioInterfaceWidgetV2> createState() =>
       _AudioInterfaceWidgetV2State();
 }
 
-class _AudioInterfaceWidgetV2State extends ConsumerState<AudioInterfaceWidgetV2> {
+class _AudioInterfaceWidgetV2State
+    extends ConsumerState<AudioInterfaceWidgetV2> {
   final uuid = const Uuid();
   String recognizedText = '';
   String? audioId;
-  bool isListening = false;
+  String? imagePath;
+  List<String?> imagePaths = [];
   bool isDone = false;
-  Timer? _timer;
-  int _millSeconds = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -53,60 +58,148 @@ class _AudioInterfaceWidgetV2State extends ConsumerState<AudioInterfaceWidgetV2>
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 IconButton(
-                  onPressed: isDone
+                  onPressed: !isDone
                       ? null
                       : () async {
                           widget.loggy
-                              .info('Play button pressed - ID: $audioId');
+                              .info('Delete button pressed - ID: $audioId');
+                          await widget.listeningService
+                              .deleteAudio(id: audioId!);
+                          setState(() {
+                            audioId = null;
+                            isDone = false;
+                            recognizedText = '';
+                          });
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: widget.color,
+                    minimumSize: const Size(50, 50),
+                  ),
+                  icon: Icon(
+                    Icons.delete,
+                    color: context.colorScheme.outlineVariant,
+                  ),
+                ),
+                IconButton(
+                  onPressed: !isDone
+                      ? null
+                      : () async {
+                          widget.loggy
+                              .info('Replay button pressed - ID: $audioId');
                           await widget.listeningService.playAudio();
                         },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: widget.color,
+                    minimumSize: const Size(50, 50),
+                  ),
                   icon: Icon(
-                    Icons.play_arrow,
+                    Icons.replay,
+                    color: context.colorScheme.outlineVariant,
+                  ),
+                ),
+                IconButton(
+                  onPressed: () async {
+                    setState(() {
+                      audioId = uuid.v4();
+                      imagePaths = [];
+                    });
+                    await Future.wait([
+                      widget.cameraService.takeMultiplePictures().then((paths) {
+                        setState(() {
+                          imagePaths.addAll(paths);
+                        });
+                        widget.loggy.info('Images captured: $imagePaths');
+                      }),
+                      showModalBottomSheet<void>(
+                        backgroundColor: context.colorScheme.onBackground,
+                        context: context,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(20)),
+                        ),
+                        builder: (context) => Container(
+                          constraints: BoxConstraints(
+                            minWidth: MediaQuery.of(context).size.width - 10,
+                          ),
+                          child: VoiceRecordBottomSheet(
+                            listeningService: widget.listeningService,
+                            color: widget.color,
+                            audioId: audioId!,
+                            onDone: (recText) {
+                              setState(() {
+                                isDone = true;
+                                recognizedText = recText;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                    ]);
+
+                    widget.loggy.info('Listen button pressed - ID: $audioId');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: widget.color.withOpacity(0.9),
+                    minimumSize: const Size(80, 80),
+                  ),
+                  icon: Icon(
+                    size: 40,
+                    Icons.mic,
                     color: context.colorScheme.surface,
                   ),
                 ),
-                GestureDetector(
-                  onLongPressStart: (details) {
-                    setState(() {
-                      isListening = true;
-                      audioId = const Uuid().v4();
-                      _millSeconds = 0;
-                      widget.listeningService.startListening();
-                    });
-
-                    // Start the timer
-                    _timer = Timer.periodic(const Duration(milliseconds: 100),
-                        (timer) {
-                      setState(() {
-                        _millSeconds += 100;
-                      });
-                    });
-                  },
-                  onLongPressEnd: (details) {
-                    setState(() {
-                      isListening = false;
-                      _timer?.cancel();
-                      widget.listeningService.stopListening(
-                        id: audioId!,
-                      );
-                    });
-                  },
-                  child: Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isListening
-                          ? widget.color.withOpacity(0.9)
-                          : widget.color.withOpacity(0.5),
-                    ),
-                    child: Center(
-                      child: Icon(
-                        isListening ? Icons.mic : Icons.mic_none,
-                        color: context.colorScheme.surface,
-                        size: 30,
-                      ),
-                    ),
+                IconButton(
+                  onPressed: !isDone
+                      ? null
+                      : () {
+                          if (imagePaths.isNotEmpty) {
+                            showDialog<AlertDialog>(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  content: SingleChildScrollView(
+                                    child: Column(
+                                      children: imagePaths
+                                          .map(
+                                            (imagePath) => imagePath != null
+                                                ? Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            8.0),
+                                                    child: ClipRRect(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              16),
+                                                      child: Image.file(
+                                                        File(imagePath),
+                                                      ),
+                                                    ),
+                                                  )
+                                                : const SizedBox.shrink(),
+                                          )
+                                          .toList(),
+                                    ),
+                                  ),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      child: const Text('Close'),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          }
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: widget.color,
+                    minimumSize: const Size(50, 50),
+                  ),
+                  icon: Icon(
+                    Icons.image,
+                    color: context.colorScheme.outlineVariant,
                   ),
                 ),
                 IconButton(
@@ -116,14 +209,11 @@ class _AudioInterfaceWidgetV2State extends ConsumerState<AudioInterfaceWidgetV2>
                           widget.loggy
                               .info('Send button pressed - $recognizedText');
 
-                          // Kiểm tra isFinished trước khi gửi
                           if (widget.listeningService.isFinished) {
                             ref
                                 .watch(messageListProvider.notifier)
                                 .handleSendPressed(
-                                  text:
-                                      widget.listeningService.recognizedText ??
-                                          '',
+                                  text: recognizedText,
                                 );
                             setState(() {
                               isDone = false;
@@ -140,6 +230,9 @@ class _AudioInterfaceWidgetV2State extends ConsumerState<AudioInterfaceWidgetV2>
                               ),
                             );
                           }
+                          setState(() {
+                            isDone = false;
+                          });
                         },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: widget.color,

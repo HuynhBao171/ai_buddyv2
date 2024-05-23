@@ -30,7 +30,7 @@ class CameraService with ServiceLoggy {
 
   Future<String?> takePicture() async {
   loggy.info('Taking picture...');
-  if (!_controller!.value.isInitialized) {
+  if (_controller != null && !_controller!.value.isInitialized) {
     loggy.warning('Camera is not initialized.');
     return null;
   }

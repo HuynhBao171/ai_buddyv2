@@ -13,4 +13,8 @@ abstract class BaseHiveRepository {
   Future<void> saveAudioMessage({required AudioMessage audioMessage});
 
   Future<AudioMessage?> getAudioMessage({required String id});
+
+  Future<void> deleteAudioMessage({
+    required String id,
+  });
 }
