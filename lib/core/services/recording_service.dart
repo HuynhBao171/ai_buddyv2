@@ -46,7 +46,7 @@ class RecordingService with ServiceLoggy {
       // Dừng AudioRecorder 
       if (await _audioRecorder.isRecording()) {
         await _audioRecorder.stop();
-        await _audioRecorder.dispose(); // Giải phóng tài nguyên
+        // await _audioRecorder.dispose(); // Giải phóng tài nguyên
       }
       isFinished = true;
 
