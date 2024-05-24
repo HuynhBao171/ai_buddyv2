@@ -2,20 +2,20 @@ import 'dart:async';
 
 import 'package:ai_buddy/core/extension/context.dart';
 import 'package:ai_buddy/core/extension/widget.dart';
-import 'package:ai_buddy/core/services/listening_service.dart';
+import 'package:ai_buddy/core/services/recording_service.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class VoiceRecordBottomSheet extends StatefulWidget {
   const VoiceRecordBottomSheet({
-    required this.listeningService,
+    required this.recordingService,
     required this.color,
     required this.audioId,
     required this.onDone,
     super.key,
   });
 
-  final ListeningService listeningService;
+  final RecordingService recordingService;
   final Color color;
   final String audioId;
   final void Function(String recognizedText) onDone;
@@ -81,7 +81,7 @@ class _VoiceRecordBottomSheetState extends State<VoiceRecordBottomSheet> {
                     setState(() {
                       isListening = true;
                       _millSeconds = 0;
-                      widget.listeningService.startListening();
+                      widget.recordingService.startRecording();
                     });
 
                     // Start the timer
@@ -98,8 +98,7 @@ class _VoiceRecordBottomSheetState extends State<VoiceRecordBottomSheet> {
                       _timer?.cancel();
                     });
 
-                    recognizedText =
-                        await widget.listeningService.stopListening(
+                    await widget.recordingService.stopRecording(
                       id: widget.audioId,
                     );
 

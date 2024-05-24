@@ -32,8 +32,12 @@ class HiveRepository implements BaseHiveRepository {
   }
 
   @override
-  Future<AudioMessage?> getAudioMessage({required String id}) async {
-    return _audioMessage.get(id); // Lấy audio message theo id
+  Future<AudioMessage> getAudioMessage({required String id}) async {
+    final audioMessage = _audioMessage.get(id); // Lấy audio message theo id
+    if (audioMessage == null) {
+      throw Exception('Audio message with id $id not found');
+    }
+    return audioMessage;
   }
 
   @override

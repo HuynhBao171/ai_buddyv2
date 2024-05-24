@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:ai_buddy/core/logger/loggy_types.dart';
 import 'package:ai_buddy/feature/hive/model/audio_message/audio_message.dart';
@@ -7,47 +8,23 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
-import 'package:speech_to_text/speech_recognition_result.dart';
-import 'package:speech_to_text/speech_to_text.dart';
 
-class ListeningService with ServiceLoggy {
-  final SpeechToText _speechToText = SpeechToText();
+class RecordingService with ServiceLoggy {
   final _audioRecorder = AudioRecorder();
   final _audioPlayer = AudioPlayer();
-  bool _speechEnabled = false;
   bool isFinished = false;
   String? _recordedFilePath;
-  String? recognizedText;
 
   final HiveRepository _hiveRepository = HiveRepository();
 
-  Future<void> initSpeech() async {
-    loggy.info('Initializing speech-to-text service...');
-    isFinished = false;
-    try {
-      _speechEnabled = await _speechToText.initialize();
-      loggy.info('Speech-to-text service initialized successfully.');
-    } catch (e) {
-      loggy.error('Error initializing speech-to-text service: $e');
-    }
-  }
-
-  Future<void> startListening() async {
-    await initSpeech();
-    loggy.info('Starting listening...');
-    if (!_speechEnabled) {
-      loggy.warning('Speech-to-text is not enabled.');
-      return;
-    }
-
+  Future<void> startRecording() async {
+    loggy.info('Starting recording...');
     try {
       if (!(await Permission.microphone.request().isGranted)) {
         loggy.warning('Microphone permission denied.');
       } else if (!(await Permission.storage.request().isGranted)) {
         loggy.warning('Storage permission denied.');
       } else {
-        recognizedText = null;
-
         // Start recording
         final tempDir = await getTemporaryDirectory();
         _recordedFilePath =
@@ -56,41 +33,32 @@ class ListeningService with ServiceLoggy {
           const RecordConfig(),
           path: _recordedFilePath!,
         );
-
-        // Start speech-to-text
-        await _speechToText.listen(onResult: _onSpeechResult);
-        loggy.info('Listening started.');
+        loggy.info('Recording started.');
       }
     } catch (e) {
-      loggy.error('Error starting listening: $e');
+      loggy.error('Error starting recording: $e');
     }
   }
 
-  void _onSpeechResult(SpeechRecognitionResult result) {
-    if (result.finalResult) {
-      recognizedText = result.recognizedWords;
-    }
-  }
-
-  Future<String> stopListening({required String id}) async {
-    loggy.info('Stopping listening...');
+  Future<void> stopRecording({required String id}) async {
+    loggy.info('Stopping recording...');
     try {
-      // Dừng AudioRecorder trước
+      // Dừng AudioRecorder 
       if (await _audioRecorder.isRecording()) {
         await _audioRecorder.stop();
         await _audioRecorder.dispose(); // Giải phóng tài nguyên
       }
-
-      // Dừng SpeechToText sau
-      if (_speechToText.isListening) {
-        await _speechToText.stop();
-      }
       isFinished = true;
 
       if (_recordedFilePath != null) {
+        final file = File(_recordedFilePath!);
+        final sizeInBytes = file.lengthSync();
+        final duration = await _audioPlayer.getDuration();
         final audioMessage = AudioMessage(
           id: id,
           filePath: _recordedFilePath!,
+          duration: duration!,
+          size: sizeInBytes,
         );
         try {
           await _hiveRepository.saveAudioMessage(audioMessage: audioMessage);
@@ -99,11 +67,8 @@ class ListeningService with ServiceLoggy {
           loggy.error('Error saving audio message: $e');
         }
       }
-
-      return recognizedText ?? '';
     } catch (e) {
-      loggy.error('Error stopping listening: $e');
-      return '';
+      loggy.error('Error stopping recording: $e');
     }
   }
 
@@ -128,6 +93,19 @@ class ListeningService with ServiceLoggy {
       loggy.info('Audio message deleted successfully.');
     } catch (e) {
       loggy.error('Error deleting audio message: $e');
+    }
+  }
+
+  Future<AudioMessage> getAudio({required String id}) async {
+    loggy.info('Getting audio message with ID: $id');
+    try {
+      final AudioMessage audioMessage =
+          await _hiveRepository.getAudioMessage(id: id);
+      loggy.info('Audio message retrieved successfully.');
+      return audioMessage;
+    } catch (e) {
+      loggy.error('Error retrieving audio message: $e');
+      rethrow;
     }
   }
 }

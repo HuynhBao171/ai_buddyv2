@@ -18,18 +18,24 @@ class AudioMessageAdapter extends TypeAdapter<AudioMessage> {
     };
     return AudioMessage(
       id: fields[0] as String,
-      filePath: fields[1] as String?,
+      filePath: fields[1] as String,
+      duration: fields[2] as Duration,
+      size: fields[3] as int,
     );
   }
 
   @override
   void write(BinaryWriter writer, AudioMessage obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.filePath);
+      ..write(obj.filePath)
+      ..writeByte(2)
+      ..write(obj.duration)
+      ..writeByte(3)
+      ..write(obj.size);
   }
 
   @override

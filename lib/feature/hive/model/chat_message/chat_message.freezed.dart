@@ -22,9 +22,13 @@ ChatMessage _$ChatMessageFromJson(Map<String, dynamic> json) {
 mixin _$ChatMessage {
   String get id => throw _privateConstructorUsedError;
   String get text => throw _privateConstructorUsedError;
+  String get imagePath => throw _privateConstructorUsedError;
+  String get audioId => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
   String get typeOfMessage => throw _privateConstructorUsedError;
   String get chatBotId => throw _privateConstructorUsedError;
+  String get typeOfMessageUser => throw _privateConstructorUsedError;
+  dynamic get requikljkkljkl => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -41,9 +45,13 @@ abstract class $ChatMessageCopyWith<$Res> {
   $Res call(
       {String id,
       String text,
+      String imagePath,
+      String audioId,
       DateTime createdAt,
       String typeOfMessage,
-      String chatBotId});
+      String chatBotId,
+      String typeOfMessageUser,
+      dynamic requikljkkljkl});
 }
 
 /// @nodoc
@@ -61,9 +69,13 @@ class _$ChatMessageCopyWithImpl<$Res, $Val extends ChatMessage>
   $Res call({
     Object? id = null,
     Object? text = null,
+    Object? imagePath = null,
+    Object? audioId = null,
     Object? createdAt = null,
     Object? typeOfMessage = null,
     Object? chatBotId = null,
+    Object? typeOfMessageUser = null,
+    Object? requikljkkljkl = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -73,6 +85,14 @@ class _$ChatMessageCopyWithImpl<$Res, $Val extends ChatMessage>
       text: null == text
           ? _value.text
           : text // ignore: cast_nullable_to_non_nullable
+              as String,
+      imagePath: null == imagePath
+          ? _value.imagePath
+          : imagePath // ignore: cast_nullable_to_non_nullable
+              as String,
+      audioId: null == audioId
+          ? _value.audioId
+          : audioId // ignore: cast_nullable_to_non_nullable
               as String,
       createdAt: null == createdAt
           ? _value.createdAt
@@ -86,6 +106,14 @@ class _$ChatMessageCopyWithImpl<$Res, $Val extends ChatMessage>
           ? _value.chatBotId
           : chatBotId // ignore: cast_nullable_to_non_nullable
               as String,
+      typeOfMessageUser: null == typeOfMessageUser
+          ? _value.typeOfMessageUser
+          : typeOfMessageUser // ignore: cast_nullable_to_non_nullable
+              as String,
+      requikljkkljkl: freezed == requikljkkljkl
+          ? _value.requikljkkljkl
+          : requikljkkljkl // ignore: cast_nullable_to_non_nullable
+              as dynamic,
     ) as $Val);
   }
 }
@@ -101,9 +129,13 @@ abstract class _$$ChatMessageImplCopyWith<$Res>
   $Res call(
       {String id,
       String text,
+      String imagePath,
+      String audioId,
       DateTime createdAt,
       String typeOfMessage,
-      String chatBotId});
+      String chatBotId,
+      String typeOfMessageUser,
+      dynamic requikljkkljkl});
 }
 
 /// @nodoc
@@ -119,9 +151,13 @@ class __$$ChatMessageImplCopyWithImpl<$Res>
   $Res call({
     Object? id = null,
     Object? text = null,
+    Object? imagePath = null,
+    Object? audioId = null,
     Object? createdAt = null,
     Object? typeOfMessage = null,
     Object? chatBotId = null,
+    Object? typeOfMessageUser = null,
+    Object? requikljkkljkl = freezed,
   }) {
     return _then(_$ChatMessageImpl(
       id: null == id
@@ -131,6 +167,14 @@ class __$$ChatMessageImplCopyWithImpl<$Res>
       text: null == text
           ? _value.text
           : text // ignore: cast_nullable_to_non_nullable
+              as String,
+      imagePath: null == imagePath
+          ? _value.imagePath
+          : imagePath // ignore: cast_nullable_to_non_nullable
+              as String,
+      audioId: null == audioId
+          ? _value.audioId
+          : audioId // ignore: cast_nullable_to_non_nullable
               as String,
       createdAt: null == createdAt
           ? _value.createdAt
@@ -144,6 +188,12 @@ class __$$ChatMessageImplCopyWithImpl<$Res>
           ? _value.chatBotId
           : chatBotId // ignore: cast_nullable_to_non_nullable
               as String,
+      typeOfMessageUser: null == typeOfMessageUser
+          ? _value.typeOfMessageUser
+          : typeOfMessageUser // ignore: cast_nullable_to_non_nullable
+              as String,
+      requikljkkljkl:
+          freezed == requikljkkljkl ? _value.requikljkkljkl! : requikljkkljkl,
     ));
   }
 }
@@ -154,9 +204,13 @@ class _$ChatMessageImpl implements _ChatMessage {
   const _$ChatMessageImpl(
       {required this.id,
       required this.text,
+      required this.imagePath,
+      required this.audioId,
       required this.createdAt,
       required this.typeOfMessage,
-      required this.chatBotId});
+      required this.chatBotId,
+      required this.typeOfMessageUser,
+      this.requikljkkljkl});
 
   factory _$ChatMessageImpl.fromJson(Map<String, dynamic> json) =>
       _$$ChatMessageImplFromJson(json);
@@ -166,15 +220,23 @@ class _$ChatMessageImpl implements _ChatMessage {
   @override
   final String text;
   @override
+  final String imagePath;
+  @override
+  final String audioId;
+  @override
   final DateTime createdAt;
   @override
   final String typeOfMessage;
   @override
   final String chatBotId;
+  @override
+  final String typeOfMessageUser;
+  @override
+  final dynamic requikljkkljkl;
 
   @override
   String toString() {
-    return 'ChatMessage(id: $id, text: $text, createdAt: $createdAt, typeOfMessage: $typeOfMessage, chatBotId: $chatBotId)';
+    return 'ChatMessage(id: $id, text: $text, imagePath: $imagePath, audioId: $audioId, createdAt: $createdAt, typeOfMessage: $typeOfMessage, chatBotId: $chatBotId, typeOfMessageUser: $typeOfMessageUser, requikljkkljkl: $requikljkkljkl)';
   }
 
   @override
@@ -184,18 +246,34 @@ class _$ChatMessageImpl implements _ChatMessage {
             other is _$ChatMessageImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.text, text) || other.text == text) &&
+            (identical(other.imagePath, imagePath) ||
+                other.imagePath == imagePath) &&
+            (identical(other.audioId, audioId) || other.audioId == audioId) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.typeOfMessage, typeOfMessage) ||
                 other.typeOfMessage == typeOfMessage) &&
             (identical(other.chatBotId, chatBotId) ||
-                other.chatBotId == chatBotId));
+                other.chatBotId == chatBotId) &&
+            (identical(other.typeOfMessageUser, typeOfMessageUser) ||
+                other.typeOfMessageUser == typeOfMessageUser) &&
+            const DeepCollectionEquality()
+                .equals(other.requikljkkljkl, requikljkkljkl));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, id, text, createdAt, typeOfMessage, chatBotId);
+  int get hashCode => Object.hash(
+      runtimeType,
+      id,
+      text,
+      imagePath,
+      audioId,
+      createdAt,
+      typeOfMessage,
+      chatBotId,
+      typeOfMessageUser,
+      const DeepCollectionEquality().hash(requikljkkljkl));
 
   @JsonKey(ignore: true)
   @override
@@ -215,9 +293,13 @@ abstract class _ChatMessage implements ChatMessage {
   const factory _ChatMessage(
       {required final String id,
       required final String text,
+      required final String imagePath,
+      required final String audioId,
       required final DateTime createdAt,
       required final String typeOfMessage,
-      required final String chatBotId}) = _$ChatMessageImpl;
+      required final String chatBotId,
+      required final String typeOfMessageUser,
+      final dynamic requikljkkljkl}) = _$ChatMessageImpl;
 
   factory _ChatMessage.fromJson(Map<String, dynamic> json) =
       _$ChatMessageImpl.fromJson;
@@ -227,11 +309,19 @@ abstract class _ChatMessage implements ChatMessage {
   @override
   String get text;
   @override
+  String get imagePath;
+  @override
+  String get audioId;
+  @override
   DateTime get createdAt;
   @override
   String get typeOfMessage;
   @override
   String get chatBotId;
+  @override
+  String get typeOfMessageUser;
+  @override
+  dynamic get requikljkkljkl;
   @override
   @JsonKey(ignore: true)
   _$$ChatMessageImplCopyWith<_$ChatMessageImpl> get copyWith =>

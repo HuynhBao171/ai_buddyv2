@@ -5,7 +5,7 @@ import 'package:ai_buddy/core/config/type_of_message.dart';
 import 'package:ai_buddy/core/extension/context.dart';
 import 'package:ai_buddy/core/extension/widget.dart';
 import 'package:ai_buddy/core/services/camera_service.dart';
-import 'package:ai_buddy/core/services/listening_service.dart';
+import 'package:ai_buddy/core/services/recording_service.dart';
 import 'package:ai_buddy/feature/chat/provider/message_provider.dart';
 import 'package:ai_buddy/feature/chat/widgets/voice_record_bottom_sheet.dart';
 import 'package:ai_buddy/feature/hive/model/chat_bot/chat_bot.dart';
@@ -22,7 +22,7 @@ class AudioInterfaceWidgetV2 extends ConsumerStatefulWidget with UiLoggy {
     required this.chatBot,
     required this.color,
     required this.imagePath,
-    required this.listeningService,
+    required this.recordingService,
     required this.cameraService,
     super.key,
   });
@@ -31,7 +31,7 @@ class AudioInterfaceWidgetV2 extends ConsumerStatefulWidget with UiLoggy {
   final ChatBot chatBot;
   final Color color;
   final String imagePath;
-  final ListeningService listeningService;
+  final RecordingService recordingService;
   final CameraService cameraService;
 
   @override
@@ -76,7 +76,7 @@ class _AudioInterfaceWidgetV2State
                           widget.loggy
                               .info('Delete button pressed - ID: $audioId');
 
-                          await widget.listeningService
+                          await widget.recordingService
                               .deleteAudio(id: audioId!);
                           setState(() {
                             audioId = null;
@@ -99,7 +99,7 @@ class _AudioInterfaceWidgetV2State
                       : () async {
                           widget.loggy
                               .info('Replay button pressed - ID: $audioId');
-                          await widget.listeningService.playAudio();
+                          await widget.recordingService.playAudio();
                         },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: widget.color,
@@ -114,14 +114,14 @@ class _AudioInterfaceWidgetV2State
                   onPressed: () async {
                     setState(() {
                       audioId = uuid.v4();
-                      imagePaths = [];
+                      imagePath = '';
                     });
                     await Future.wait([
-                      widget.cameraService.takeMultiplePictures().then((paths) {
+                      widget.cameraService.takePicture().then((paths) {
                         setState(() {
-                          imagePaths.addAll(paths);
+                          imagePath = paths;
                         });
-                        widget.loggy.info('Images captured: $imagePaths');
+                        widget.loggy.info('Images captured: $imagePath');
                       }),
                       showModalBottomSheet<void>(
                         backgroundColor: context.colorScheme.onBackground,
@@ -135,7 +135,7 @@ class _AudioInterfaceWidgetV2State
                             minWidth: MediaQuery.of(context).size.width - 10,
                           ),
                           child: VoiceRecordBottomSheet(
-                            listeningService: widget.listeningService,
+                            recordingService: widget.recordingService,
                             color: widget.color,
                             audioId: audioId!,
                             onDone: (recText) {
@@ -165,32 +165,20 @@ class _AudioInterfaceWidgetV2State
                   onPressed: !isDone
                       ? null
                       : () {
-                          if (imagePaths.isNotEmpty) {
+                          if (imagePath != null) {
                             showDialog<AlertDialog>(
                               context: context,
                               builder: (context) {
                                 return AlertDialog(
                                   content: SingleChildScrollView(
-                                    child: Column(
-                                      children: imagePaths
-                                          .map(
-                                            (imagePath) => imagePath != null
-                                                ? Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            8.0),
-                                                    child: ClipRRect(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              16),
-                                                      child: Image.file(
-                                                        File(imagePath),
-                                                      ),
-                                                    ),
-                                                  )
-                                                : const SizedBox.shrink(),
-                                          )
-                                          .toList(),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(16),
+                                        child: Image.file(
+                                          File(imagePath!),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                   actions: <Widget>[
@@ -222,18 +210,20 @@ class _AudioInterfaceWidgetV2State
                           widget.loggy
                               .info('Send button pressed - $recognizedText');
 
-                          if (widget.listeningService.isFinished) {
+                          if (isDone) {
                             ref
                                 .watch(messageListProvider.notifier)
                                 .handleSendPressed(
-                                  text: recognizedText,
+                                  text: 'đây là gì ?',
+                                  imageFilePath: imagePath,
+                                  audioId: audioId,
                                 );
                             setState(() {
                               isDone = false;
                             });
                           } else {
                             widget.loggy.warning(
-                              'Speech recognition is not finished yet.',
+                              'Record is not finished yet.',
                             );
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(

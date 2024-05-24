@@ -17,7 +17,7 @@ class CameraService with ServiceLoggy {
       if (await Permission.camera.request().isGranted) {
         _cameras = await availableCameras();
         _controller = CameraController(
-          _cameras[1],
+          _cameras[0],
           ResolutionPreset.ultraHigh,
         );
         await _controller?.initialize().then((_) async {

@@ -5,13 +5,16 @@ part 'chat_message.g.dart';
 
 @freezed
 class ChatMessage with _$ChatMessage {
-  const factory ChatMessage({
-    required String id,
-    required String text,
-    required DateTime createdAt,
-    required String typeOfMessage,
-    required String chatBotId,
-  }) = _ChatMessage;
+  const factory ChatMessage(
+      {required String id,
+      required String text,
+      required String imagePath,
+      required String audioId,
+      required DateTime createdAt,
+      required String typeOfMessage,
+      required String chatBotId,
+      required String typeOfMessageUser,
+      requikljkkljkl}) = _ChatMessage;
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) =>
       _$ChatMessageFromJson(json);

@@ -4,7 +4,7 @@ import 'package:ai_buddy/core/config/type_of_message.dart';
 import 'package:ai_buddy/core/extension/context.dart';
 import 'package:ai_buddy/core/extension/widget.dart';
 import 'package:ai_buddy/core/services/camera_service.dart';
-import 'package:ai_buddy/core/services/listening_service.dart';
+import 'package:ai_buddy/core/services/recording_service.dart';
 import 'package:ai_buddy/feature/chat/provider/message_provider.dart';
 import 'package:ai_buddy/feature/hive/model/chat_bot/chat_bot.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +20,7 @@ class AudioInterfaceWidget extends ConsumerStatefulWidget with UiLoggy {
     required this.chatBot,
     required this.color,
     required this.imagePath,
-    required this.listeningService,
+    required this.recordingService,
     required this.cameraService,
     super.key,
   });
@@ -29,7 +29,7 @@ class AudioInterfaceWidget extends ConsumerStatefulWidget with UiLoggy {
   final ChatBot chatBot;
   final Color color;
   final String imagePath;
-  final ListeningService listeningService;
+  final RecordingService recordingService;
   final CameraService cameraService;
 
   @override
@@ -69,8 +69,8 @@ class _AudioInterfaceWidgetState extends ConsumerState<AudioInterfaceWidget> {
 
                           widget.loggy
                               .info('Listen button pressed - ID: $audioId');
-                          await widget.listeningService.initSpeech();
-                          await widget.listeningService.startListening();
+                          // await widget.listeningService.initSpeech();
+                          await widget.recordingService.startRecording();
                         },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: widget.color.withOpacity(0.9),
@@ -91,8 +91,8 @@ class _AudioInterfaceWidgetState extends ConsumerState<AudioInterfaceWidget> {
                           });
                           widget.loggy
                               .info('Done button pressed - ID: $audioId');
-                          recognizedText =
-                              await widget.listeningService.stopListening(
+
+                          await widget.recordingService.stopRecording(
                             id: audioId!,
                           );
                           widget.loggy.info('Recognized text: $recognizedText');
@@ -112,7 +112,7 @@ class _AudioInterfaceWidgetState extends ConsumerState<AudioInterfaceWidget> {
                       : () async {
                           widget.loggy
                               .info('Play back button pressed - ID: $audioId');
-                          await widget.listeningService.playAudio();
+                          await widget.recordingService.playAudio();
                         },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: widget.color.withOpacity(0.9),
@@ -178,13 +178,11 @@ class _AudioInterfaceWidgetState extends ConsumerState<AudioInterfaceWidget> {
                       ? null
                       : () {
                           widget.loggy.info('Send button pressed');
-                          if (widget.listeningService.isFinished) {
+                          if (widget.recordingService.isFinished) {
                             ref
                                 .watch(messageListProvider.notifier)
                                 .handleSendPressed(
-                                  text:
-                                      widget.listeningService.recognizedText ??
-                                          '',
+                                  text: '',
                                 );
                             setState(() {
                               isDone = false;

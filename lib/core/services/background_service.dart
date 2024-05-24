@@ -92,7 +92,7 @@ Future<void> onStart(ServiceInstance service) async {
 
     service.on('setAsBackground').listen((event) {
       // final ListeningService listeningService = getIt<ListeningService>();
-      // listeningService.startListening();
+      // listeningService.startRecording();
       service.setAsBackgroundService();
     });
   }
