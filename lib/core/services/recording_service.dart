@@ -13,7 +13,7 @@ class RecordingService with ServiceLoggy {
   final _audioRecorder = AudioRecorder();
   final _audioPlayer = AudioPlayer();
   bool isFinished = false;
-  String? _recordedFilePath;
+  String _recordedFilePath = '';
 
   final HiveRepository _hiveRepository = HiveRepository();
 
@@ -31,7 +31,7 @@ class RecordingService with ServiceLoggy {
             '${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.aac';
         await _audioRecorder.start(
           const RecordConfig(),
-          path: _recordedFilePath!,
+          path: _recordedFilePath,
         );
         loggy.info('Recording started.');
       }
@@ -43,29 +43,44 @@ class RecordingService with ServiceLoggy {
   Future<void> stopRecording({required String id}) async {
     loggy.info('Stopping recording...');
     try {
-      // Dừng AudioRecorder 
       if (await _audioRecorder.isRecording()) {
+        loggy.info('Stopping audio recording...');
         await _audioRecorder.stop();
-        // await _audioRecorder.dispose(); // Giải phóng tài nguyên
+        loggy.info('Audio recording stopped.');
       }
       isFinished = true;
 
-      if (_recordedFilePath != null) {
-        final file = File(_recordedFilePath!);
-        final sizeInBytes = file.lengthSync();
-        final duration = await _audioPlayer.getDuration();
-        final audioMessage = AudioMessage(
-          id: id,
-          filePath: _recordedFilePath!,
-          duration: duration!,
-          size: sizeInBytes,
-        );
-        try {
-          await _hiveRepository.saveAudioMessage(audioMessage: audioMessage);
-          loggy.info('Audio message saved successfully.');
-        } catch (e) {
-          loggy.error('Error saving audio message: $e');
-        }
+      loggy.info('Saving audio message $id .. $_recordedFilePath');
+      final file = File(_recordedFilePath);
+      final sizeInBytes = file.lengthSync();
+
+      Duration? duration;
+      try {
+        await _audioPlayer.play(DeviceFileSource(
+          _recordedFilePath,
+          mimeType: 'audio/aac',
+        ));
+        duration = await _audioPlayer.getDuration();
+      } catch (e) {
+        loggy.error('Error loading or getting duration: $e');
+        duration = Duration.zero;
+      }
+
+      loggy.info('duration: $duration');
+      final audioMessage = AudioMessage(
+        id: id,
+        filePath: _recordedFilePath,
+        duration: duration ?? Duration.zero,
+        size: sizeInBytes,
+      );
+      loggy
+        ..info('duration: $duration')
+        ..info('Audio message created: $audioMessage');
+      try {
+        await _hiveRepository.saveAudioMessage(audioMessage: audioMessage);
+        loggy.info('Audio message saved successfully.');
+      } catch (e) {
+        loggy.error('Error saving audio message: $e');
       }
     } catch (e) {
       loggy.error('Error stopping recording: $e');
@@ -74,15 +89,13 @@ class RecordingService with ServiceLoggy {
 
   Future<void> playAudio() async {
     loggy.info('Playing audio...');
-    if (_recordedFilePath != null) {
-      try {
-        await _audioPlayer.play(DeviceFileSource(
-          _recordedFilePath!,
-          mimeType: 'audio/aac',
-        ));
-      } catch (e) {
-        loggy.error('Error playing audio: $e');
-      }
+    try {
+      await _audioPlayer.play(DeviceFileSource(
+        _recordedFilePath,
+        mimeType: 'audio/aac',
+      ));
+    } catch (e) {
+      loggy.error('Error playing audio: $e');
     }
   }
 

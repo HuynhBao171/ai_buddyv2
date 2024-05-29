@@ -18,8 +18,8 @@ class AudioMessage extends HiveObject {
   final String filePath;
 
   @HiveField(2)
-  final Duration duration; // Thêm duration
+  final Duration duration; 
 
   @HiveField(3)
-  final int size; // Thêm size
+  final int size; 
 }

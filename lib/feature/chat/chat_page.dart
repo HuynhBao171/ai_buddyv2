@@ -28,44 +28,65 @@ final recordingServiceProviver =
 class ChatPage extends ConsumerWidget with UiLoggy {
   const ChatPage({super.key});
 
-  Future<List<types.Message>> _buildMessages(
-      ChatBot chatBot, RecordingService recordingService) async {
-    return (await Future.wait(chatBot.messagesList.map((msg) async {
+  Future<List<types.Message>> _buildTextMessages(ChatBot chatBot) async {
+    return chatBot.messagesList
+        .where((msg) =>
+            msg['typeOfMessageUser'] == TypeOfMessageUser.text)
+        .map((msg) {
       final typeOfMessage = msg['typeOfMessage'] as String;
-      if (msg['typeOfMessageUser'] == TypeOfMessageUser.imageAndAudio) {
-        //  loggy.info('Image and Audio');
-        // final imagePath = msg['imagePath'] as String;
-        // final file = File(imagePath);
-        // final sizeInBytes = file.lengthSync();
-        // return types.ImageMessage(
-        // author: types.User(id: typeOfMessage),
-        // createdAt: DateTime.parse(msg['createdAt'] as String)
-        //     .millisecondsSinceEpoch,
-        // id: msg['id'] as String,
-        // name: '',
-        // size: sizeInBytes,
-        // uri: msg['imagePath'] as String,
-        // );
-        final audioId = msg['audioId'] as String;
-        final AudioMessage audioMessage =
-            await recordingService.getAudio(id: audioId);
-        return types.AudioMessage(
-          author: types.User(id: typeOfMessage),
-          createdAt:
-              DateTime.parse(msg['createdAt'] as String).millisecondsSinceEpoch,
-          id: msg['id'] as String,
-          name: '',
-          size: audioMessage.size,
-          uri: msg['audioPath'] as String,
-          duration: audioMessage.duration,
-        );
-      }
       return types.TextMessage(
         author: types.User(id: typeOfMessage),
         createdAt:
             DateTime.parse(msg['createdAt'] as String).millisecondsSinceEpoch,
         id: msg['id'] as String,
         text: msg['text'] as String,
+      );
+    }).toList()
+      ..sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
+  }
+
+  Future<List<types.Message>> _buildImageMessages(ChatBot chatBot) async {
+    return (await Future.wait(chatBot.messagesList
+        .where(
+      (msg) => msg['typeOfMessageUser'] == TypeOfMessageUser.image,
+    )
+        .map((msg) async {
+      final typeOfMessage = msg['typeOfMessage'] as String;
+      final imagePath = msg['imagePath'] as String;
+      final file = File(imagePath);
+      final sizeInBytes = file.lengthSync();
+      return types.ImageMessage(
+        author: types.User(id: typeOfMessage),
+        createdAt:
+            DateTime.parse(msg['createdAt'] as String).millisecondsSinceEpoch,
+        id: msg['id'] as String,
+        name: '',
+        size: sizeInBytes,
+        uri: msg['imagePath'] as String,
+      );
+    }).toList()))
+      ..sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
+  }
+
+  Future<List<types.Message>> _buildAudioMessages(
+      ChatBot chatBot, RecordingService recordingService) async {
+    return (await Future.wait(chatBot.messagesList
+        .where(
+      (msg) => msg['typeOfMessageUser'] == TypeOfMessageUser.audio,
+    )
+        .map((msg) async {
+      final typeOfMessage = msg['typeOfMessage'] as String;
+      final audioId = msg['audioId'] as String;
+      final audioMessage = await recordingService.getAudio(id: audioId);
+      return types.AudioMessage(
+        author: types.User(id: typeOfMessage),
+        createdAt:
+            DateTime.parse(msg['createdAt'] as String).millisecondsSinceEpoch,
+        id: msg['id'] as String,
+        name: 'Audio',
+        size: audioMessage.size,
+        uri: audioMessage.filePath,
+        duration: audioMessage.duration,
       );
     }).toList()))
       ..sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
@@ -215,53 +236,44 @@ class ChatPage extends ConsumerWidget with UiLoggy {
                     const SizedBox(
                       height: 8,
                     ),
-                    if (chatBot.typeOfBot == TypeOfBot.audio)
-                      Expanded(
-                        child: FutureBuilder<List<types.Message>>(
-                          future: _buildMessages(chatBot,
-                              recordingService), // Chờ Future hoàn thành
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              return AudioInterfaceWidgetV2(
+                    FutureBuilder<List<types.Message>>(
+                      future: _buildAllMessages(chatBot, recordingService),
+                      builder: (context, snapshot) {
+                        loggy.info(
+                            'FutureBuilder state: ${snapshot.connectionState}');
+
+                        if (snapshot.hasData) {
+                          loggy.info('FutureBuilder data: ${snapshot.data}');
+                          if (chatBot.typeOfBot == TypeOfBot.audio) {
+                            return Expanded(
+                              child: AudioInterfaceWidgetV2(
                                 messages: snapshot.data!,
                                 chatBot: chatBot,
                                 color: color,
                                 imagePath: imagePath,
                                 recordingService: recordingService,
                                 cameraService: cameraService,
-                              );
-                            } else if (snapshot.hasError) {
-                              // Xử lý lỗi
-                              return const Text('Error loading messages');
-                            } else {
-                              // Hiển thị progress indicator
-                              return const CircularProgressIndicator();
-                            }
-                          },
-                        ),
-                      ),
-                    // Expanded(
-                    //   child: FutureBuilder<List<types.Message>>(
-                    //     future: _buildMessages(
-                    //         chatBot, listeningService), // Chờ Future hoàn thành
-                    //     builder: (context, snapshot) {
-                    //       if (snapshot.hasData) {
-                    //         return ChatInterfaceWidget(
-                    //           messages: snapshot.data!,
-                    //           chatBot: chatBot,
-                    //           color: color,
-                    //           imagePath: imagePath,
-                    //         );
-                    //       } else if (snapshot.hasError) {
-                    //         // Xử lý lỗi
-                    //         return const Text('Error loading messages');
-                    //       } else {
-                    //         // Hiển thị progress indicator
-                    //         return const CircularProgressIndicator();
-                    //       }
-                    //     },
-                    //   ),
-                    // )
+                              ),
+                            );
+                          } else {
+                            return Expanded(
+                              child: ChatInterfaceWidget(
+                                messages: snapshot.data!,
+                                chatBot: chatBot,
+                                color: color,
+                                imagePath: imagePath,
+                              ),
+                            );
+                          }
+                        } else if (snapshot.hasError) {
+                          loggy.error('FutureBuilder error: ${snapshot.error}');
+                          return const Text('Error loading messages');
+                        } else {
+                          loggy.info('FutureBuilder waiting for data...');
+                          return const CircularProgressIndicator();
+                        }
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -271,49 +283,13 @@ class ChatPage extends ConsumerWidget with UiLoggy {
       ),
     );
   }
-}
 
-// List<types.Message> _buildMessages(ChatBot chatBot, ListeningService listeningService)  {
-//   return chatBot.messagesList
-//       .map((msg) {
-//         final typeOfMessage = msg['typeOfMessage'] as String;
-//         if (msg['typeOfMessageUser'] == TypeOfMessageUser.imageAndAudio) {
-//         //  loggy.info('Image and Audio');
-//             // final imagePath = msg['imagePath'] as String;
-//             // final file = File(imagePath);
-//             // final sizeInBytes = file.lengthSync();
-//             // return types.ImageMessage(
-//             // author: types.User(id: typeOfMessage),
-//             // createdAt: DateTime.parse(msg['createdAt'] as String)
-//             //     .millisecondsSinceEpoch,
-//             // id: msg['id'] as String,
-//             // name: '',
-//             // size: sizeInBytes,
-//             // uri: msg['imagePath'] as String,
-//             // );
-//             final audioId = msg['audioId'] as String;
-//             final AudioMessage audioMessage = await
-//                 listeningService.getAudio(id: audioId);
-//             return types.AudioMessage(
-//               author: types.User(id: typeOfMessage),
-//               createdAt: DateTime.parse(msg['createdAt'] as String)
-//                   .millisecondsSinceEpoch,
-//               id: msg['id'] as String,
-//               name: '',
-//               size: audioMessage.size,
-//               uri: msg['audioPath'] as String,
-//               duration: audioMessage.duration,
-//             );
-//         }
-//         return types.TextMessage(
-//           author: types.User(id: typeOfMessage),
-//           createdAt:
-//               DateTime.parse(msg['createdAt'] as String).millisecondsSinceEpoch,
-//           id: msg['id'] as String,
-//           text: msg['text'] as String,
-//         );
-//       })
-//       .where((element) => element != null)
-//       .toList()
-//     ..sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
-// }
+  Future<List<types.Message>> _buildAllMessages(
+      ChatBot chatBot, RecordingService recordingService) async {
+    final textMessages = await _buildTextMessages(chatBot);
+    final audioMessages = await _buildAudioMessages(chatBot, recordingService);
+    // final imageMessages = await _buildImageMessages(chatBot);
+    // return [...textMessages, ...audioMessages, ...imageMessages];
+    return [...textMessages, ...audioMessages];
+  }
+}

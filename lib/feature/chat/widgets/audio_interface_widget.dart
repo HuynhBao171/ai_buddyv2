@@ -135,17 +135,13 @@ class _AudioInterfaceWidgetState extends ConsumerState<AudioInterfaceWidget> {
                                 children: imagePaths
                                     .map(
                                       (imagePath) => imagePath != null
-                                          ? Padding(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              child: ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(16),
-                                                child: Image.file(
-                                                  File(imagePath),
-                                                ),
+                                          ? ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                              child: Image.file(
+                                                File(imagePath),
                                               ),
-                                            )
+                                            ).paddingAll(8)
                                           : const SizedBox.shrink(),
                                     )
                                     .toList(),
@@ -219,13 +215,10 @@ class _AudioInterfaceWidgetState extends ConsumerState<AudioInterfaceWidget> {
               child: CircleAvatar(
                 backgroundColor: widget.color,
                 radius: 19,
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Image.asset(
-                    widget.imagePath,
-                    color: context.colorScheme.surface,
-                  ),
-                ),
+                child: Image.asset(
+                  widget.imagePath,
+                  color: context.colorScheme.surface,
+                ).paddingAll(8),
               ),
             ),
             // Các tùy chỉnh giao diện khác của Chat widget

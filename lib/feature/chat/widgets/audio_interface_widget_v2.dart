@@ -11,12 +11,13 @@ import 'package:ai_buddy/feature/chat/widgets/voice_record_bottom_sheet.dart';
 import 'package:ai_buddy/feature/hive/model/chat_bot/chat_bot.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
+import 'package:voice_message_package/voice_message_package.dart';
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:loggy/loggy.dart';
 import 'package:uuid/uuid.dart';
 
-class AudioInterfaceWidgetV2 extends ConsumerStatefulWidget with UiLoggy {
+class AudioInterfaceWidgetV2 extends ConsumerStatefulWidget {
   const AudioInterfaceWidgetV2({
     required this.messages,
     required this.chatBot,
@@ -39,8 +40,8 @@ class AudioInterfaceWidgetV2 extends ConsumerStatefulWidget with UiLoggy {
       _AudioInterfaceWidgetV2State();
 }
 
-class _AudioInterfaceWidgetV2State
-    extends ConsumerState<AudioInterfaceWidgetV2> {
+class _AudioInterfaceWidgetV2State extends ConsumerState<AudioInterfaceWidgetV2>
+    with UiLoggy {
   final uuid = const Uuid();
   String recognizedText = '';
   String? audioId;
@@ -73,8 +74,7 @@ class _AudioInterfaceWidgetV2State
                   onPressed: !isDone
                       ? null
                       : () async {
-                          widget.loggy
-                              .info('Delete button pressed - ID: $audioId');
+                          loggy.info('Delete button pressed - ID: $audioId');
 
                           await widget.recordingService
                               .deleteAudio(id: audioId!);
@@ -97,8 +97,7 @@ class _AudioInterfaceWidgetV2State
                   onPressed: !isDone
                       ? null
                       : () async {
-                          widget.loggy
-                              .info('Replay button pressed - ID: $audioId');
+                          loggy.info('Replay button pressed - ID: $audioId');
                           await widget.recordingService.playAudio();
                         },
                   style: ElevatedButton.styleFrom(
@@ -121,7 +120,7 @@ class _AudioInterfaceWidgetV2State
                         setState(() {
                           imagePath = paths;
                         });
-                        widget.loggy.info('Images captured: $imagePath');
+                        loggy.info('Images captured: $imagePath');
                       }),
                       showModalBottomSheet<void>(
                         backgroundColor: context.colorScheme.onBackground,
@@ -149,7 +148,7 @@ class _AudioInterfaceWidgetV2State
                       ),
                     ]);
 
-                    widget.loggy.info('Listen button pressed - ID: $audioId');
+                    loggy.info('Listen button pressed - ID: $audioId');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: widget.color.withOpacity(0.9),
@@ -171,15 +170,12 @@ class _AudioInterfaceWidgetV2State
                               builder: (context) {
                                 return AlertDialog(
                                   content: SingleChildScrollView(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(16),
-                                        child: Image.file(
-                                          File(imagePath!),
-                                        ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: Image.file(
+                                        File(imagePath!),
                                       ),
-                                    ),
+                                    ).paddingAll(8),
                                   ),
                                   actions: <Widget>[
                                     TextButton(
@@ -207,8 +203,7 @@ class _AudioInterfaceWidgetV2State
                   onPressed: !isDone
                       ? null
                       : () {
-                          widget.loggy
-                              .info('Send button pressed - $recognizedText');
+                          loggy.info('Send button pressed - $recognizedText');
 
                           if (isDone) {
                             ref
@@ -222,7 +217,7 @@ class _AudioInterfaceWidgetV2State
                               isDone = false;
                             });
                           } else {
-                            widget.loggy.warning(
+                            loggy.warning(
                               'Record is not finished yet.',
                             );
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -249,6 +244,30 @@ class _AudioInterfaceWidgetV2State
               ],
             ).paddingBottom(8),
             messages: widget.messages,
+            audioMessageBuilder: (audioMessage, {required messageWidth}) {
+              final isMine = audioMessage.author.id == TypeOfMessage.user;
+              return VoiceMessageView(
+                backgroundColor:
+                    isMine ? widget.color : context.colorScheme.onSurface,
+                controller: VoiceController(
+                  audioSrc: audioMessage.uri,
+                  maxDuration: audioMessage.duration,
+                  onComplete: () {
+                    // Logic khi audio phát xong
+                    loggy.info('Audio message playback completed.');
+                  },
+                  onPause: () {
+                    // Logic khi audio bị tạm dừng
+                    loggy.info('Audio message playback paused.');
+                  },
+                  onPlaying: () {
+                    // Logic khi audio đang phát
+                    loggy.info('Audio message playback started.');
+                  },
+                  isFile: true,
+                ),
+              );
+            },
             user: const types.User(id: TypeOfMessage.user),
             showUserAvatars: true,
             avatarBuilder: (user) => Padding(
@@ -256,13 +275,10 @@ class _AudioInterfaceWidgetV2State
               child: CircleAvatar(
                 backgroundColor: widget.color,
                 radius: 19,
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Image.asset(
-                    widget.imagePath,
-                    color: context.colorScheme.surface,
-                  ),
-                ),
+                child: Image.asset(
+                  widget.imagePath,
+                  color: context.colorScheme.surface,
+                ).paddingAll(8),
               ),
             ),
             // Các tùy chỉnh giao diện khác của Chat widget

@@ -1,6 +1,7 @@
 import 'package:ai_buddy/core/app/app.dart';
 import 'package:ai_buddy/feature/hive/model/audio_message/audio_message.dart';
 import 'package:ai_buddy/feature/hive/model/chat_bot/chat_bot.dart';
+import 'package:ai_buddy/feature/hive/model/duration/duration.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,7 +20,8 @@ Future<void> main() async {
   Hive
     ..init(appDocumentDir.path)
     ..registerAdapter(ChatBotAdapter())
-    ..registerAdapter(AudioMessageAdapter());
+    ..registerAdapter(AudioMessageAdapter())
+    ..registerAdapter(DurationAdapter());
   await Hive.openBox<ChatBot>('chatbots');
   await Hive.openBox<AudioMessage>('audioMessages');
 

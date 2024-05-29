@@ -1,4 +1,5 @@
 import 'package:ai_buddy/core/extension/context.dart';
+import 'package:ai_buddy/core/extension/widget.dart';
 import 'package:ai_buddy/core/navigation/route.dart';
 import 'package:ai_buddy/feature/chat/provider/message_provider.dart';
 import 'package:ai_buddy/feature/hive/model/chat_bot/chat_bot.dart';
@@ -46,12 +47,9 @@ class HistoryItem extends ConsumerWidget {
           children: [
             CircleAvatar(
               backgroundColor: color,
-              child: Padding(
-                padding: const EdgeInsets.all(10),
-                child: Image.asset(
-                  imagePath,
-                ),
-              ),
+              child: Image.asset(
+                imagePath,
+              ).paddingAll(10),
             ),
             const SizedBox(width: 8),
             Expanded(

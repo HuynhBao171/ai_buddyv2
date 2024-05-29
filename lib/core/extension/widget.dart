@@ -28,4 +28,11 @@ extension WidgetPaddingExtension on Widget {
       child: this,
     );
   }
+
+  Widget paddingAll(double value) {
+    return Padding(
+      padding: EdgeInsets.all(value),
+      child: this,
+    );
+  }
 }

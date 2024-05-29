@@ -1,9 +1,10 @@
+import 'package:ai_buddy/core/logger/loggy_types.dart';
 import 'package:ai_buddy/feature/hive/model/audio_message/audio_message.dart';
 import 'package:ai_buddy/feature/hive/model/chat_bot/chat_bot.dart';
 import 'package:ai_buddy/feature/hive/repository/base_hive_repository.dart';
 import 'package:hive/hive.dart';
 
-class HiveRepository implements BaseHiveRepository {
+class HiveRepository with RepositoryLoggy implements BaseHiveRepository {
   HiveRepository();
   final Box<ChatBot> _chatBot = Hive.box<ChatBot>('chatbots');
   final Box<AudioMessage> _audioMessage =
@@ -27,17 +28,29 @@ class HiveRepository implements BaseHiveRepository {
   }
 
   @override
-  Future<void> saveAudioMessage({required AudioMessage audioMessage}) async {
-    await _audioMessage.add(audioMessage); // Thêm audio message vào box
+Future<void> saveAudioMessage({required AudioMessage audioMessage}) async {
+  try {
+    await _audioMessage.put(audioMessage.id, audioMessage);
+    loggy.info('Audio message with id ${audioMessage.id} saved successfully');
+  } catch (e) {
+    loggy.error('Error saving audio message with id ${audioMessage.id}: $e');
+    rethrow;
   }
+}
 
   @override
   Future<AudioMessage> getAudioMessage({required String id}) async {
-    final audioMessage = _audioMessage.get(id); // Lấy audio message theo id
-    if (audioMessage == null) {
-      throw Exception('Audio message with id $id not found');
+    try {
+      final audioMessage = _audioMessage.get(id);
+      if (audioMessage == null) {
+        throw Exception('Audio message with id $id not found');
+      }
+      loggy.info('Audio message with id $id retrieved successfully');
+      return audioMessage;
+    } catch (e) {
+      loggy.error('Error retrieving audio message with id $id: $e');
+      rethrow;
     }
-    return audioMessage;
   }
 
   @override

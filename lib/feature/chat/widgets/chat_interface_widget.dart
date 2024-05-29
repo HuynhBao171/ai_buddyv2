@@ -1,5 +1,6 @@
 import 'package:ai_buddy/core/config/type_of_message.dart';
 import 'package:ai_buddy/core/extension/context.dart';
+import 'package:ai_buddy/core/extension/widget.dart';
 import 'package:ai_buddy/feature/chat/provider/message_provider.dart';
 import 'package:ai_buddy/feature/hive/model/chat_bot/chat_bot.dart';
 import 'package:flutter/material.dart';
@@ -37,13 +38,10 @@ class ChatInterfaceWidget extends ConsumerWidget {
         child: CircleAvatar(
           backgroundColor: color,
           radius: 19,
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: Image.asset(
-              imagePath,
-              color: context.colorScheme.surface,
-            ),
-          ),
+          child: Image.asset(
+            imagePath,
+            color: context.colorScheme.surface,
+          ).paddingAll(8),
         ),
       ),
       theme: DefaultChatTheme(

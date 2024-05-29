@@ -1,4 +1,5 @@
 import 'package:ai_buddy/core/extension/context.dart';
+import 'package:ai_buddy/core/extension/widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -37,13 +38,10 @@ class CardButton extends StatelessWidget {
             children: [
               CircleAvatar(
                 backgroundColor: context.colorScheme.surface.withOpacity(0.2),
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Image.asset(
-                    imagePath,
-                    color: context.colorScheme.surface,
-                  ),
-                ),
+                child: Image.asset(
+                  imagePath,
+                  color: context.colorScheme.surface,
+                ).paddingAll(8),
               ),
               Icon(
                 CupertinoIcons.arrow_up_right,
