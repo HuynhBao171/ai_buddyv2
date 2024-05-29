@@ -56,36 +56,36 @@ class MessageListNotifier extends StateNotifier<ChatBot> {
       typeOfMessageUser: TypeOfMessageUser.text,
     );
 
-    // Cập nhật ChatBot
-    if (imageFilePath != null && audioId != null) {
-      // Gửi ảnh
-      await updateChatBotWithMessage(ChatMessage(
-        id: messageId,
-        text: '',
-        imagePath: imageFilePath,
-        audioId: '',
-        createdAt: DateTime.now(),
-        typeOfMessage: TypeOfMessage.user,
-        chatBotId: state.id,
-        typeOfMessageUser: TypeOfMessageUser.image,
-      ));
+    // // Cập nhật ChatBot
+    // if (imageFilePath != null && audioId != null) {
+    //   // Gửi ảnh
+    //   await updateChatBotWithMessage(ChatMessage(
+    //     id: messageId,
+    //     text: '',
+    //     imagePath: imageFilePath,
+    //     audioId: '',
+    //     createdAt: DateTime.now(),
+    //     typeOfMessage: TypeOfMessage.user,
+    //     chatBotId: state.id,
+    //     typeOfMessageUser: TypeOfMessageUser.image,
+    //   ));
 
-      // Gửi audio
-      await updateChatBotWithMessage(ChatMessage(
-        id: messageId,
-        text: '',
-        imagePath: '',
-        audioId: audioId,
-        createdAt: DateTime.now(),
-        typeOfMessage: TypeOfMessage.user,
-        chatBotId: state.id,
-        typeOfMessageUser: TypeOfMessageUser.audio,
-      ));
-    } else {
-      // Gửi text hoặc text với image
-      await updateChatBotWithMessage(message);
-    }
-
+    //   // // Gửi audio
+    //   // await updateChatBotWithMessage(ChatMessage(
+    //   //   id: messageId,
+    //   //   text: '',
+    //   //   imagePath: '',
+    //   //   audioId: audioId,
+    //   //   createdAt: DateTime.now(),
+    //   //   typeOfMessage: TypeOfMessage.user,
+    //   //   chatBotId: state.id,
+    //   //   typeOfMessageUser: TypeOfMessageUser.audio,
+    //   // ));
+    // } else {
+    //   // Gửi text hoặc text với image
+    // await updateChatBotWithMessage(message);
+    // }
+    await updateChatBotWithMessage(message);
     if (audioId != null) {
       await getGeminiResponseWithAudioAndImage(
           prompt: text!, imageFilePath: imageFilePath);

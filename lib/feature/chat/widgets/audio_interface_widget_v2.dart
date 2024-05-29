@@ -5,10 +5,12 @@ import 'package:ai_buddy/core/config/type_of_message.dart';
 import 'package:ai_buddy/core/extension/context.dart';
 import 'package:ai_buddy/core/extension/widget.dart';
 import 'package:ai_buddy/core/services/camera_service.dart';
+import 'package:ai_buddy/core/services/deepgram_service.dart';
 import 'package:ai_buddy/core/services/recording_service.dart';
 import 'package:ai_buddy/feature/chat/provider/message_provider.dart';
 import 'package:ai_buddy/feature/chat/widgets/voice_record_bottom_sheet.dart';
 import 'package:ai_buddy/feature/hive/model/chat_bot/chat_bot.dart';
+import 'package:ai_buddy/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:voice_message_package/voice_message_package.dart';
@@ -25,6 +27,7 @@ class AudioInterfaceWidgetV2 extends ConsumerStatefulWidget {
     required this.imagePath,
     required this.recordingService,
     required this.cameraService,
+    required this.deepgramService,
     super.key,
   });
 
@@ -34,6 +37,7 @@ class AudioInterfaceWidgetV2 extends ConsumerStatefulWidget {
   final String imagePath;
   final RecordingService recordingService;
   final CameraService cameraService;
+  final DeepgramService deepgramService;
 
   @override
   ConsumerState<AudioInterfaceWidgetV2> createState() =>
@@ -143,6 +147,7 @@ class _AudioInterfaceWidgetV2State extends ConsumerState<AudioInterfaceWidgetV2>
                                 recognizedText = recText;
                               });
                             },
+                            deepgramService: widget.deepgramService,
                           ),
                         ),
                       ),
@@ -206,13 +211,30 @@ class _AudioInterfaceWidgetV2State extends ConsumerState<AudioInterfaceWidgetV2>
                           loggy.info('Send button pressed - $recognizedText');
 
                           if (isDone) {
-                            ref
-                                .watch(messageListProvider.notifier)
-                                .handleSendPressed(
-                                  text: 'đây là gì ?',
-                                  imageFilePath: imagePath,
-                                  audioId: audioId,
-                                );
+                            // Kiểm tra audioId
+                            if (audioId != null) {
+                              // Chuyển đổi audio thành text
+                              ref
+                                  .watch(deepgramServiceProviver)
+                                  .convertAudioToText(audioId!)
+                                  .then((audioText) {
+                                ref
+                                    .watch(messageListProvider.notifier)
+                                    .handleSendPressed(
+                                      text:
+                                          liveTranscriptionStream.stream.value,
+                                      imageFilePath: imagePath,
+                                      audioId: audioId,
+                                    );
+                              });
+                            } else {
+                              // Gửi text hoặc text với image
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('No audio to send.'),
+                                ),
+                              );
+                            }
                             setState(() {
                               isDone = false;
                             });

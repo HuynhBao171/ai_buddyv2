@@ -6,6 +6,7 @@ import 'package:ai_buddy/core/config/type_of_message_user.dart';
 import 'package:ai_buddy/core/extension/context.dart';
 import 'package:ai_buddy/core/logger/loggy_types.dart';
 import 'package:ai_buddy/core/services/camera_service.dart';
+import 'package:ai_buddy/core/services/deepgram_service.dart';
 import 'package:ai_buddy/core/services/recording_service.dart';
 import 'package:ai_buddy/feature/chat/provider/message_provider.dart';
 import 'package:ai_buddy/feature/chat/widgets/audio_interface_widget.dart';
@@ -25,13 +26,18 @@ final cameraServiceProviver = Provider<CameraService>((ref) => CameraService());
 final recordingServiceProviver =
     Provider<RecordingService>((ref) => RecordingService());
 
+// Provider cho DeepgramService
+final deepgramServiceProviver = Provider<DeepgramService>(
+  (ref) =>
+      DeepgramService(recordingService: ref.watch(recordingServiceProviver)),
+);
+
 class ChatPage extends ConsumerWidget with UiLoggy {
   const ChatPage({super.key});
 
   Future<List<types.Message>> _buildTextMessages(ChatBot chatBot) async {
     return chatBot.messagesList
-        .where((msg) =>
-            msg['typeOfMessageUser'] == TypeOfMessageUser.text)
+        .where((msg) => msg['typeOfMessageUser'] == TypeOfMessageUser.text)
         .map((msg) {
       final typeOfMessage = msg['typeOfMessage'] as String;
       return types.TextMessage(
@@ -95,6 +101,7 @@ class ChatPage extends ConsumerWidget with UiLoggy {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final recordingService = ref.watch(recordingServiceProviver);
+    final deepgramService = ref.watch(deepgramServiceProviver);
 
     final cameraService = ref.watch(cameraServiceProviver);
 
@@ -253,6 +260,7 @@ class ChatPage extends ConsumerWidget with UiLoggy {
                                 imagePath: imagePath,
                                 recordingService: recordingService,
                                 cameraService: cameraService,
+                                deepgramService: deepgramService,
                               ),
                             );
                           } else {

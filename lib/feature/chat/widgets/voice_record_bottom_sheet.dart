@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:ai_buddy/core/extension/context.dart';
 import 'package:ai_buddy/core/extension/widget.dart';
+import 'package:ai_buddy/core/services/deepgram_service.dart';
 import 'package:ai_buddy/core/services/recording_service.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
@@ -9,6 +10,7 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 class VoiceRecordBottomSheet extends StatefulWidget {
   const VoiceRecordBottomSheet({
     required this.recordingService,
+    required this.deepgramService,
     required this.color,
     required this.audioId,
     required this.onDone,
@@ -16,6 +18,7 @@ class VoiceRecordBottomSheet extends StatefulWidget {
   });
 
   final RecordingService recordingService;
+  final DeepgramService deepgramService;
   final Color color;
   final String audioId;
   final void Function(String recognizedText) onDone;
@@ -77,12 +80,18 @@ class _VoiceRecordBottomSheetState extends State<VoiceRecordBottomSheet> {
                       : const SizedBox(),
                 ).paddingBottom(30),
                 GestureDetector(
-                  onLongPressStart: (details) {
+                  onLongPressStart: (details) async {
                     setState(() {
                       isListening = true;
                       _millSeconds = 0;
-                      widget.recordingService.startRecording();
                     });
+
+                    // await Future.wait([
+                    //   widget.deepgramService.startLiveTranscription(),
+                    //   widget.recordingService.startRecording(),
+                    // ]);
+                    await widget.recordingService
+                        .startRecording();
 
                     // Start the timer
                     _timer = Timer.periodic(const Duration(milliseconds: 100),
@@ -97,8 +106,15 @@ class _VoiceRecordBottomSheetState extends State<VoiceRecordBottomSheet> {
                       isListening = false;
                       _timer?.cancel();
                     });
+                    // await Future.wait([
+                    //   widget.deepgramService.stopLiveTranscription(),
+                    //   widget.recordingService.stopRecording(
+                    //     id: widget.audioId,
+                    //   ),
+                    // ]);
 
                     await widget.recordingService.stopRecording(
+                      // widget.deepgramService,
                       id: widget.audioId,
                     );
 

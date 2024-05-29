@@ -70,7 +70,7 @@ class _AudioInterfaceWidgetState extends ConsumerState<AudioInterfaceWidget> {
                           widget.loggy
                               .info('Listen button pressed - ID: $audioId');
                           // await widget.listeningService.initSpeech();
-                          await widget.recordingService.startRecording();
+                          // await widget.recordingService.startRecording();
                         },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: widget.color.withOpacity(0.9),
@@ -92,9 +92,9 @@ class _AudioInterfaceWidgetState extends ConsumerState<AudioInterfaceWidget> {
                           widget.loggy
                               .info('Done button pressed - ID: $audioId');
 
-                          await widget.recordingService.stopRecording(
-                            id: audioId!,
-                          );
+                          // await widget.recordingService.stopRecording(
+                          //   id: audioId!,
+                          // );
                           widget.loggy.info('Recognized text: $recognizedText');
                         },
                   style: ElevatedButton.styleFrom(

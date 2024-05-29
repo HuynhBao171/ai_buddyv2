@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:ai_buddy/core/app/app.dart';
 import 'package:ai_buddy/feature/hive/model/audio_message/audio_message.dart';
 import 'package:ai_buddy/feature/hive/model/chat_bot/chat_bot.dart';
@@ -5,14 +7,19 @@ import 'package:ai_buddy/feature/hive/model/duration/duration.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import 'package:loggy/loggy.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:rxdart/rxdart.dart';
+
+final liveTranscriptionStream = BehaviorSubject<String>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: '.env');
   _initLoggy();
   _initGoogleFonts();
 

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:ai_buddy/core/logger/loggy_types.dart';
+import 'package:ai_buddy/core/services/deepgram_service.dart';
 import 'package:ai_buddy/feature/hive/model/audio_message/audio_message.dart';
 import 'package:ai_buddy/feature/hive/repository/hive_repository.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -19,6 +20,7 @@ class RecordingService with ServiceLoggy {
 
   Future<void> startRecording() async {
     loggy.info('Starting recording...');
+
     try {
       if (!(await Permission.microphone.request().isGranted)) {
         loggy.warning('Microphone permission denied.');
@@ -29,6 +31,21 @@ class RecordingService with ServiceLoggy {
         final tempDir = await getTemporaryDirectory();
         _recordedFilePath =
             '${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.aac';
+
+        // final audioStream = await _audioRecorder.startStream(const RecordConfig(
+        //   encoder: AudioEncoder.pcm16bits,
+        //   sampleRate: 16000,
+        //   numChannels: 1,
+        // ));
+
+        // await Future.wait([
+        //   deepgramService.startLiveTranscription(audioStream: audioStream),
+        //   _audioRecorder.start(
+        //     const RecordConfig(),
+        //     path: _recordedFilePath,
+        //   ),
+        // ]);
+
         await _audioRecorder.start(
           const RecordConfig(),
           path: _recordedFilePath,
@@ -40,11 +57,20 @@ class RecordingService with ServiceLoggy {
     }
   }
 
-  Future<void> stopRecording({required String id}) async {
+  Future<void> stopRecording({
+    required String id,
+  }) async {
     loggy.info('Stopping recording...');
     try {
       if (await _audioRecorder.isRecording()) {
         loggy.info('Stopping audio recording...');
+        await _audioRecorder.stop();
+
+        // await Future.wait([
+        //   deepgramService.stopLiveTranscription(),
+        //   _audioRecorder.stop(),
+        // ]);
+
         await _audioRecorder.stop();
         loggy.info('Audio recording stopped.');
       }
